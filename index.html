@@ -4,15 +4,17 @@
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>666 representation</title>
+	<title>Number representation</title>
 
+	<script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+	<script src="functional.js"></script>
 	<!--<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>-->
 	<!--<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>-->
 	
 </head>
 
 <body>
-	<main id=main" class="cmath">
+	<main id=main" class="cmath" style="display: none;">
 		$$ 600+66=666 $$
 	</main>
 </body>
@@ -21,9 +23,23 @@
 
 // http://127.0.0.1:5500/index.html?&num=666&seed=0
 
-var urlsp = new URLSearchParams(window.location.href)
-var num = urlsp.get('num')
-var seed = urlsp.get('seed')
+var current_url = new URL(window.location.href)
+var num = current_url.searchParams.get('num')
+var seed = current_url.searchParams.get('seed')
+var next_new_seed = current_url.searchParams.get('next_new')
+
+if (num == null) num = 666
+if (seed == null) seed = 80085
+if (next_new_seed == 'true') seed = hashString(' ' + Math.random())
+
+var new_url = new URL(current_url)
+new_url.searchParams.set('num', num)
+new_url.searchParams.set('seed', seed)
+window.history.pushState({ path: new_url.href }, '', new_url.href);
+
+if (num == 666) $('body').addClass('hell-mode')
+
+random = new SeededRandom(hashString(' ' + seed));
 
 MathJax = {
 	tex: {
@@ -34,74 +50,6 @@ MathJax = {
 	}
 };
 
-function rand_int(minimum, maximum, exclude=[]) {
-	// var p, ok
-	// do {
-	// 	p = Math.floor(Math.random() * (maximum - minimum + 1)) + minimum
-	// 	ok = exclude.includes(p)
-	// } while (!ok);
-
-	console.log(minimum, maximum, exclude)
-
-	// exclude.sort(function(a, b){return a - b})
-	for (var i=0; i < exclude.length; i++) {
-		if (exclude.includes(minimum+1)) { 
-			minimum++; 
-			exclude = exclude.filter(e => e <= minimum) 
-		}
-		if (exclude.includes(maximum-1)) { 
-			maximum--; 
-			exclude = exclude.filter(e => e >= maximum) 
-		}
-	}
-
-	if (maximum - minimum < 0) {console.log('aaa'); return null}
-	
-	var p = Math.floor(Math.random() * (maximum - minimum + 1)) + minimum
-	if (exclude.includes(p)) return rand_int(minimum, maximum, exclude)
-	
-	return p
-}
-
-function expand_expression(number, depth_rate=0.5, prob=1, prev=-1) {
-	var res_str = ''
-
-	var count = 3
-	var excl = []
-	if (prob == 1) excl.push(1)
-	if (prev == 3) excl.push(3)
-	
-	if (excl.length == count) return number
-	
-	var t = rand_int(1, count, excl)
-	
-	console.log(number, t)
-	
-	if (t == 1) {
-		res_str = number
-	}
-	else if (t == 2) {
-		var a = rand_int(0, Math.abs(number)*2, [number]) - number
-		var b = number - a
-
-		res_str += expand_expression(a, depth_rate, prob*depth_rate, prev=t)
-		res_str += '+'
-		res_str += expand_expression(b, depth_rate, prob*depth_rate, prev=t)
-	}
-	else if (t == 3) {
-		var b = rand_int(2, 13)
-		var a = number * b
-
-		res_str += '\\frac{'
-		res_str += expand_expression(a, depth_rate, prob*depth_rate, prev=t)
-		res_str += '}{'
-		res_str += expand_expression(b, depth_rate, prob*depth_rate, prev=t)
-		res_str += '}'
-	}
-	
-	// return res_str
-	return '(' + res_str + ')'
-}
 
 let promise = Promise.resolve();
 function typeset(code) {
@@ -110,14 +58,15 @@ function typeset(code) {
   return promise;
 }
 
-var expr = expand_expression(num)
-
 typeset(() => {
+	var expr = expand_expression(num)
 	const math = document.querySelector('main');
-	console.log(expr)
 	math.innerHTML = '$$' + expr + '=' + num + '$$';
 	return [math];
 });
+
+
+$('main').fadeIn(3000)
 
 </script>
 
@@ -131,6 +80,15 @@ main {
 	top: 50%;
 	transform: translate(-50%, -50%);
 	font-size: 3vmin;
+}
+
+body {
+	background-color: whitesmoke;
+}
+
+.hell-mode {
+	background-color: #666;
+	color: red;
 }
 
 </style>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Arithmetic exercise</title>
+
+	<script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+	<script src="https://unpkg.com/underscore@1.13.6/underscore-umd-min.js"></script>
+	<script src="fs.js"></script>
+
+	<link rel="stylesheet" href="ar_styles.css">
+
+	<!--<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>-->
+	<!--<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>-->
+	
+</head>
+
+<body>
+	<div name="0" class="exercise">
+		<div name="0" id="expression">$$ 1+1= $$</div>
+		<input name="0" id="answer" type="text" autocomplete="off" placeholder="?">
+	</div>
+
+	<footer>
+		by <a href="https://github.com/mihahanya">Mihahanya</a>, 2023
+	</footer>
+</body>
+
+<script>
+//AIzaSyDfWtA9gNFImv0jrdd9qaSgFWyUiEU9L1M
+// http://127.0.0.1:5500/index.html?&num=666&seed=0
+//$$ \frac{\frac{6323+\frac{110594}{11}+\frac{119516+\frac{-1237313}{7}}{3}}{8}\times2336}{3}= $$
+
+var urlsp = new URLSearchParams(window.location.href)
+var seed = urlsp.get('seed')
+
+MathJax = {
+	tex: {
+		inlineMath: [['$', '$'], ['\\(', '\\)']]
+	},
+	svg: {
+		fontCache: 'global'
+	}
+};
+
+let promise = Promise.resolve();
+function typeset(code) {
+  promise = promise.then(() => MathJax.typesetPromise(code()))
+                   .catch((err) => console.log('Typeset failed: ' + err.message));
+  return promise;
+}
+
+typeset(() => {
+	const math = document.querySelector('main');
+	console.log(expr)
+	math.innerHTML = '$$' + expr + '=' + num + '$$';
+	return [math];
+});
+
+
+var expr = { expression: '1+1', answer: '2' }
+var I=0
+
+$(document).keyup('#answer', _.debounce((e) => {
+if (e.target.name == I) {
+
+	if ($(e.target).val() == expr.answer) {
+		$(e.target).prop('disabled', 'true')
+		$(e.target).removeClass('error-answer')
+
+		expr = gen_simple_expr(I)
+		I++
+
+		$('body').append(
+		`<div name="${I}" class="exercise" style="display: none;">
+			<div name="${I}" id="expression">$$ 1+1= $$</div>
+			<input name="${I}" id="answer" type="text" autocomplete="off" placeholder="?">
+		</div>`)
+		$('.exercise').fadeIn(1618)
+
+		typeset(() => {
+			const math = document.querySelector('#expression[name="' + I + '"]');
+			math.innerHTML = '$$' + expr.expression + '=$$';
+			return [math];
+		});
+	}
+	else {
+		$(e.target).addClass('error-answer')
+	}
+
+}
+}, 500))
+
+</script>
+
+<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+</html>
