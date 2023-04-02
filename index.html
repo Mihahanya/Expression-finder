@@ -14,14 +14,14 @@
 </head>
 
 <body>
-	<main id=main" class="cmath" style="display: none;">
-		$$ 600+66=666 $$
+	<main id="main" class="cmath" style="display: none;">
+		$$ ? $$
 	</main>
 </body>
 
 <script>
 
-// http://127.0.0.1:5500/index.html?&num=666&seed=0
+// http://127.0.0.1:5500/index.html?num=666&seed=-1562958036&next_new=true
 
 var current_url = new URL(window.location.href)
 var num = current_url.searchParams.get('num')
@@ -29,15 +29,17 @@ var seed = current_url.searchParams.get('seed')
 var next_new_seed = current_url.searchParams.get('next_new')
 
 if (num == null) num = 666
-if (seed == null) seed = 80085
-if (next_new_seed == 'true') seed = hashString(' ' + Math.random())
+
+if (seed == null && next_new_seed != 'false') next_new_seed = true
+else next_new_seed = next_new_seed == 'true'
+
+if (next_new_seed) seed = hashString(' ' + Math.random())
 
 var new_url = new URL(current_url)
 new_url.searchParams.set('num', num)
 new_url.searchParams.set('seed', seed)
+new_url.searchParams.set('next_new', next_new_seed)
 window.history.pushState({ path: new_url.href }, '', new_url.href);
-
-if (num == 666) $('body').addClass('hell-mode')
 
 random = new SeededRandom(hashString(' ' + seed));
 
@@ -60,21 +62,29 @@ function typeset(code) {
 
 typeset(() => {
 	var expr = expand_expression(num)
-	const math = document.querySelector('main');
+	const math = document.querySelector('#main');
 	math.innerHTML = '$$' + expr + '=' + num + '$$';
 	return [math];
 });
 
 
-$('main').fadeIn(3000)
+if (num == 666) $('body').addClass('hell-mode')
+
+$('#main').fadeIn(3000)
 
 </script>
 
-<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+	MathJax.Hub.Config({
+		extensions: ["tex2jax.js"],
+		jax: ["input/TeX","output/HTML-CSS"],
+		tex2jax: {inlineMath: [["$","$"],["\\(","\\)"]]}
+	});
+</script>
 
 <style>
 
-main {
+#main {
 	position: absolute;
 	left: 50%;
 	top: 50%;
