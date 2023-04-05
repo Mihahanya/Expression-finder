@@ -62,6 +62,9 @@ function typeset(code) {
 
 typeset(() => {
 	var expr = expand_expression(num)
+
+	console.log(expr)
+
 	const math = document.querySelector('#main');
 	math.innerHTML = '$$' + expr + '=' + num + '$$';
 	return [math];

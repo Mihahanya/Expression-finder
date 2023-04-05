@@ -71,24 +71,39 @@ function get_divisors(num) {
 }
 
 
-function expand_expression(number, depth_rate=0.7, prob=1, prev=-1, brc=false) {
-	if (random.next() > prob) return number
+function expand_expression(number, depth_rate=0.8, prob=1, prev=-1, brc=false) {
+	if (random.next() > prob && number != 1) return number
 
 	var res_str = ''
 	number = +number
 
-	console.log(number)
+	var next_prob = prob*depth_rate
 
-	const count_of_complication_types = 4
+	//if (random.next() < 1-prob) {
+		if (number == 1) {
+			const operation_type = rand_int(1, 4)
+			if (operation_type == 1) return '\\left(-e^{\\pi i}\\right)'
+			if (operation_type == 2) return `\\sin\\frac{\\pi}{${expand_expression(2, depth_rate, next_prob, 3)}}`
+			if (operation_type == 3) return `\\tan\\frac{\\pi}{${expand_expression(4, depth_rate, next_prob, 3)}}`
+			if (operation_type == 4) return `0.(9)`
+		}
+		// if (number == 2) {
+		// 	const operation_type = rand_int(1, 3)
+		// 	if (operation_type == 1) return '(-e^{\\pi i})'
+		// 	if (operation_type == 2) return `\\sin\\frac{\\pi}{${expand_expression(2, depth_rate, next_prob, 3)}}`
+		// 	if (operation_type == 3) return `\\tan\\frac{\\pi}{${expand_expression(4, depth_rate, next_prob, 3)}}`
+		// }
+	//}
+
+
+	const count_of_complication_types = 5
 	
 	var t = rand_int(1, count_of_complication_types)
 	
-	var next_prob = prob*depth_rate
-
 	if (number == 0) return 0
 
 	if (t == 1) {
-		var a = rand_int(1, number-1, true)
+		var a = rand_int(1, number-1, true) 	// a < number
 		var b = number - a
 
 		res_str += expand_expression(a, depth_rate, next_prob, t)
@@ -96,7 +111,7 @@ function expand_expression(number, depth_rate=0.7, prob=1, prev=-1, brc=false) {
 		res_str += expand_expression(b, depth_rate, next_prob, t)
 	}
 	else if (t == 2) {
-		var a = rand_int(number+1, number*2, true)
+		var a = rand_int(number+1, number*2, true) 	// number < a < 2*number
 		var b = a - number
 
 		res_str += expand_expression(a, depth_rate, next_prob, t)
@@ -104,7 +119,7 @@ function expand_expression(number, depth_rate=0.7, prob=1, prev=-1, brc=false) {
 		res_str += expand_expression(b, depth_rate, next_prob, t, true)
 	}
 	else if (t == 3) {
-		var b = rand_int(2, Math.min(number/3, 777)+13)
+		var b = rand_int(2, Math.min(number/3, 777)+13) 	// rand(2, ($ <= 777) + 13 )
 		var a = number * b
 
 		if (prev != t) {
@@ -123,13 +138,31 @@ function expand_expression(number, depth_rate=0.7, prob=1, prev=-1, brc=false) {
 	else if (t == 4) {
 		var b = get_divisors(number).sample()
 		var a = number / b
+		var second_num = expand_expression(b, depth_rate, next_prob, t, true)
 
 		res_str += expand_expression(a, depth_rate, next_prob, t, true)
-		res_str += '\\times'
-		res_str += expand_expression(b, depth_rate, next_prob, t, true)
+
+		if (second_num.toString().indexOf('\\') != 0) res_str += '\\times'
+		
+		res_str += second_num
+	}
+	else if (t == 5) {
+		var a = number**2
+		var expand_expr = expand_expression(a, depth_rate, next_prob, t)
+
+		if (expand_expr.toString().indexOf('\\sqrt{') == 0) {
+			res_str += '\\sqrt[4]{'
+			expand_expr = expand_expr.slice(6, -1)
+		}
+		else {
+			res_str += '\\sqrt{'
+		}
+
+		res_str += expand_expr
+		res_str += '}'
 	}
 	
-	if (brc && res_str.split('').some(e => '+-'.includes(e)) && t != 3) return '(' + res_str + ')' 
+	if (brc && res_str.split('').some(e => '+-'.includes(e)) && t != 3) return '\\left(' + res_str + '\\right)' 
 
 	return res_str
 }
